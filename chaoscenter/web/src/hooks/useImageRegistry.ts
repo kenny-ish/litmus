@@ -17,12 +17,19 @@ export function useImageRegistry(): { imageRegistry: ImageRegistry | undefined; 
     projectID: projectID ?? ''
   });
 
-  // Create imageRegistry object with fallback values
-  const imageRegistry = getImageRegistryData?.getImageRegistry ? {
-    name: getImageRegistryData.getImageRegistry.imageRegistryInfo.imageRegistryName,
-    repo: getImageRegistryData.getImageRegistry.imageRegistryInfo.imageRepoName,
-    secret: getImageRegistryData.getImageRegistry.imageRegistryInfo.secretName,
-  } : DEFAULT_IMAGE_REGISTRY;
+  const imageRegistryInfo = getImageRegistryData?.getImageRegistry?.imageRegistryInfo;
+
+  // Create imageRegistry object with fallback values. The registry hostname is
+  // only prefixed to the repo when it is set, so an empty hostname does not
+  // produce a leading slash (e.g. "/team/chaos").
+  const imageRegistry: ImageRegistry = imageRegistryInfo
+    ? {
+        repo: imageRegistryInfo.imageRegistryName
+          ? `${imageRegistryInfo.imageRegistryName}/${imageRegistryInfo.imageRepoName}`
+          : imageRegistryInfo.imageRepoName,
+        secret: imageRegistryInfo.secretName
+      }
+    : DEFAULT_IMAGE_REGISTRY;
 
   return { imageRegistry, loading };
 }
